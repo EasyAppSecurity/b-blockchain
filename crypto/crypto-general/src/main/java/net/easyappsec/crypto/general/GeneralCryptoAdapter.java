@@ -3,6 +3,7 @@ package net.easyappsec.crypto.general;
 import net.easyappsec.crypto.general.storage.KeyStorage;
 import net.easyappsec.crypto.general.storage.MemoryPrivateKeyStorage;
 import net.easyappsec.crypto.general.storage.MemoryPublicKeyStorage;
+import net.easyappsec.crypto.general.util.CryptoUtil;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -14,12 +15,7 @@ public class GeneralCryptoAdapter implements CryptoAdapter{
     private KeyStorage<PrivateKey> privateKeyKeyStorage = new MemoryPrivateKeyStorage();
 
     public byte[] hash(byte[] data) {
-        try{
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return digest.digest(data);
-        }catch(Exception ex){
-            throw new RuntimeException(ex);
-        }
+        return CryptoUtil.sha256(data);
     }
 
     private static final int MAC_KEY_SIZE = 32;
