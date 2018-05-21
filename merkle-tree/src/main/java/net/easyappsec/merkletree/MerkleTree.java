@@ -5,6 +5,7 @@ import net.easyappsec.merkletree.factory.impl.SimpleMerkleNodeFactory;
 import net.easyappsec.merkletree.factory.util.Iterators;
 import net.easyappsec.merkletree.factory.util.MathUtil;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -207,6 +208,27 @@ public class MerkleTree implements Serializable {
         return rootHash.equals(testHash);
     }
 
+    public static List<Pair<MerkleHash, MerkleHash>> auditHashPairs(MerkleHash leafHash, List<MerkleProofHash> auditTrail) {
+        contract(() -> auditTrail.size() > 0, "Audit trail cannot be empty.");
+        List<Pair<MerkleHash, MerkleHash>> auditPairs = new LinkedList<Pair<MerkleHash, MerkleHash>>();
+        MerkleHash testHash = leafHash;
+
+        // TODO: Inefficient - compute hashes directly.
+        for (MerkleProofHash auditHash : auditTrail) {
+            switch (auditHash.getDirection()) {
+                case Left:
+                    auditPairs.add(Pair.of(testHash, auditHash.getHash());
+                    testHash = MerkleHash.create(ArrayUtils.addAll(testHash.getValue(), auditHash.getHash().getValue()));
+                    break;
+                case Right:
+                    auditPairs.add(Pair.of(auditHash.getHash(), testHash));
+                    testHash = MerkleHash.create(ArrayUtils.addAll(auditHash.getHash().getValue(), testHash.getValue()));
+                    break;
+
+            }
+        }
+        return auditPairs;
+    }
 
     public void setNodeFactory(MerkleNodeFactory nodeFactory) {
         this.nodeFactory = nodeFactory;
