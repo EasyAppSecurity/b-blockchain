@@ -2,8 +2,8 @@ package net.easyappsec.merkletree;
 
 import net.easyappsec.merkletree.factory.MerkleNodeFactory;
 import net.easyappsec.merkletree.factory.impl.SimpleMerkleNodeFactory;
-import net.easyappsec.merkletree.factory.util.Iterators;
-import net.easyappsec.merkletree.factory.util.MathUtil;
+import net.easyappsec.merkletree.util.Iterators;
+import net.easyappsec.merkletree.util.MathUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -228,6 +228,32 @@ public class MerkleTree implements Serializable {
             }
         }
         return auditPairs;
+    }
+
+    public static MerkleHash computeHash(MerkleHash left, MerkleHash right) {
+        return MerkleHash.create(ArrayUtils.addAll(left.getValue(), right.getValue()));
+    }
+
+    public static boolean verifyConsistency(MerkleHash oldRootHash, List<MerkleProofHash> proof) {
+        MerkleHash hash, lhash, rhash;
+
+        if (proof.size() > 1) {
+            lhash = proof.get(proof.size() - 2).getHash();
+            int hidx = proof.size() - 1;
+            hash = rhash = computeHash(lhash, proof.get(hidx).getHash());
+            hidx -= 2;
+
+            while (hidx >= 0) {
+                lhash = proof.get(hidx).getHash();
+                hash = rhash = computeHash(lhash, rhash);
+
+                --hidx;
+            }
+        } else {
+            hash = proof.get(0).getHash();
+        }
+
+        return hash.equals(oldRootHash);
     }
 
     public void setNodeFactory(MerkleNodeFactory nodeFactory) {

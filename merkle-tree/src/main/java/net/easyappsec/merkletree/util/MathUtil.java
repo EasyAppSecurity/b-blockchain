@@ -1,4 +1,4 @@
-package net.easyappsec.merkletree.factory.util;
+package net.easyappsec.merkletree.util;
 
 public class MathUtil {
 
