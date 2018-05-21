@@ -1,6 +1,8 @@
 package net.easyappsec.merkletree;
 
-public class MerkleProofHash {
+import java.io.Serializable;
+
+public class MerkleProofHash implements Serializable {
 
     private MerkleHash hash;
     private Branch direction;

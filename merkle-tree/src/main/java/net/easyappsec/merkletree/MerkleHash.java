@@ -4,29 +4,30 @@ import net.easyappsec.crypto.general.util.CryptoUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import sun.nio.cs.StandardCharsets;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 
-public class MerkleHash {
+public class MerkleHash implements Serializable {
 
     private byte[] value;
 
-    protected MerkleHash(){
+    protected MerkleHash() {
     }
 
-    public static MerkleHash create(byte[] buffer){
+    public static MerkleHash create(byte[] buffer) {
         MerkleHash hash = new MerkleHash();
         hash.computeHash(buffer);
         return hash;
     }
 
-    public static MerkleHash create(String string){
+    public static MerkleHash create(String string) {
         return create(string.getBytes(UTF_8));
     }
 
-    public static MerkleHash create(MerkleHash left, MerkleHash right){
+    public static MerkleHash create(MerkleHash left, MerkleHash right) {
         return create(ArrayUtils.addAll(left.value, right.value));
     }
 
@@ -38,7 +39,7 @@ public class MerkleHash {
         this.value = value;
     }
 
-    public void computeHash(byte[] buffer){
+    public void computeHash(byte[] buffer) {
         setValue(CryptoUtil.sha256(buffer));
     }
 

@@ -1,6 +1,6 @@
 package net.easyappsec.merkletree;
 
-public class MerkleException extends Exception{
+public class MerkleException extends RuntimeException {
 
     public MerkleException() {
     }
