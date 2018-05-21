@@ -8,18 +8,35 @@
     <artifactId>b-blockchain</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
     <modules>
         <module>crypto</module>
         <module>jce</module>
         <module>merkle-tree</module>
+        <module>block</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>net.easyappsec</groupId>
+                <artifactId>merkle-tree</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.easyappsec</groupId>
                 <artifactId>crypto-general</artifactId>
                 <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.9.4</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -31,6 +48,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.7</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.9.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

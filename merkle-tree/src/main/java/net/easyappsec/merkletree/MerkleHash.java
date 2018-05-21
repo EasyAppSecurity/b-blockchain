@@ -1,8 +1,7 @@
 package net.easyappsec.merkletree;
 
-import net.easyappsec.crypto.general.util.CryptoUtil;
+import net.easyappsec.merkletree.factory.CryptoAdapterFactory;
 import org.apache.commons.lang3.ArrayUtils;
-import sun.nio.cs.StandardCharsets;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -40,7 +39,7 @@ public class MerkleHash implements Serializable {
     }
 
     public void computeHash(byte[] buffer) {
-        setValue(CryptoUtil.sha256(buffer));
+        setValue(CryptoAdapterFactory.getCryptoAdapter().hash(buffer));
     }
 
     @Override
