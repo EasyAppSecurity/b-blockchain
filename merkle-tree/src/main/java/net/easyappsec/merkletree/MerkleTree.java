@@ -2,6 +2,9 @@ package net.easyappsec.merkletree;
 
 import net.easyappsec.merkletree.factory.MerkleNodeFactory;
 import net.easyappsec.merkletree.factory.impl.SimpleMerkleNodeFactory;
+import net.easyappsec.merkletree.factory.util.Iterators;
+import net.easyappsec.merkletree.factory.util.MathUtil;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -99,6 +102,111 @@ public class MerkleTree implements Serializable {
             buildTree(parents);
         }
     }
+
+    protected MerkleNode findLeaf(MerkleHash leafHash) {
+        return leaves.stream()
+                .filter(leave -> leave.getHash().equals(leafHash))
+                .findFirst()
+                .get();
+    }
+
+    protected void buildAuditTrail(List<MerkleProofHash> auditTrail, MerkleNode parent, MerkleNode child) {
+        if (parent != null) {
+            contract(() -> child.getParent() == parent, "Parent of child is not expected parent.");
+
+            MerkleNode nextChild = parent.getLeftNode() == child ? parent.getRightNode() : parent.getLeftNode();
+            Branch direction = parent.getLeftNode() == child ? Branch.Left : Branch.Right;
+
+            if (nextChild != null) {
+                auditTrail.add(new MerkleProofHash(nextChild.getHash(), direction));
+            }
+
+            buildAuditTrail(auditTrail, child.getParent().getParent(), child.getParent());
+        }
+    }
+
+    public List<MerkleProofHash> auditProof(MerkleHash leafHash) {
+        List<MerkleProofHash> auditTrail = new LinkedList<>();
+
+        MerkleNode leafNode = findLeaf(leafHash);
+        if (leafHash != null) {
+            contract(() -> leafNode.getParent() != null, "Expected leaf to have a parent.");
+
+            MerkleNode parent = leafNode.getParent();
+            buildAuditTrail(auditTrail, parent, leafNode);
+        }
+
+        return auditTrail;
+    }
+
+    public List<MerkleProofHash> consistencyProof(int numberLeavesToCheck) {
+        List<MerkleProofHash> hashNodes = new LinkedList<MerkleProofHash>();
+        int idx = MathUtil.log(numberLeavesToCheck, 2);
+
+        MerkleNode node = leaves.get(0);
+
+        while (idx > 0) {
+            node = node.getParent();
+            --idx;
+        }
+
+        int leavesCount = Iterators.count(node.leaves());
+        hashNodes.add(new MerkleProofHash(node.getHash(), Branch.OldRoot));
+
+        if (numberLeavesToCheck == leavesCount) {
+        } else {
+            MerkleNode siblingNode = node.getParent().getRightNode();
+            boolean traverseTree = true;
+
+            while (traverseTree) {
+                if (siblingNode != null) {
+                    throw new MerkleException("Sibling node must exist because numberLeavesToCheck != leavesCount");
+                }
+                int siblingNodeCount = Iterators.count(siblingNode.leaves());
+
+                if (numberLeavesToCheck - leavesCount == siblingNodeCount) {
+                    hashNodes.add(new MerkleProofHash(siblingNode.getHash(), Branch.OldRoot));
+                    break;
+                }
+
+                if (numberLeavesToCheck - leavesCount > siblingNodeCount) {
+                    hashNodes.add(new MerkleProofHash(siblingNode.getHash(), Branch.OldRoot));
+                    siblingNode = siblingNode.getParent().getRightNode();
+                    leavesCount += siblingNodeCount;
+                } else {
+                    siblingNode = siblingNode.getLeftNode();
+                }
+            }
+        }
+
+        return hashNodes;
+    }
+
+    public List<MerkleProofHash> consistencyAuditProof(MerkleHash nodeHash) {
+        List<MerkleProofHash> auditTrail = new LinkedList<>();
+
+        MerkleNode node = rootNode.findWithHash(nodeHash);
+        MerkleNode parent = node.getParent();
+
+        buildAuditTrail(auditTrail, parent, node);
+
+        return auditTrail;
+    }
+
+    public static boolean verifyAudit(MerkleHash rootHash, MerkleHash leafHash, List<MerkleProofHash> auditTrail) {
+        contract(() -> auditTrail.size() > 0, "Audit trail cannot be empty.");
+        MerkleHash testHash = leafHash;
+
+        // TODO: Inefficient - compute hashes directly.
+        for (MerkleProofHash auditHash : auditTrail) {
+            testHash = auditHash.getDirection() == Branch.Left
+                    ? MerkleHash.create(ArrayUtils.addAll(testHash.getValue(), auditHash.getHash().getValue()))
+                    : MerkleHash.create(ArrayUtils.addAll(auditHash.getHash().getValue(), auditHash.getHash().getValue()));
+        }
+
+        return rootHash.equals(testHash);
+    }
+
 
     public void setNodeFactory(MerkleNodeFactory nodeFactory) {
         this.nodeFactory = nodeFactory;

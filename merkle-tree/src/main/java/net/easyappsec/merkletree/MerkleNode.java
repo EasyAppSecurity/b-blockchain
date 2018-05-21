@@ -40,6 +40,17 @@ public class MerkleNode implements Iterable<MerkleNode>, Serializable {
         return hash.toString();
     }
 
+    public MerkleNode findWithHash(MerkleHash hash) {
+        Iterator<MerkleNode> nodeIterator = iterator();
+        while (nodeIterator.hasNext()) {
+            MerkleNode node = nodeIterator.next();
+            if (node.getHash().equals(hash)) {
+                return node;
+            }
+        }
+        return null;
+    }
+
     public Iterator<MerkleNode> iterator() {
         return iterate(this);
     }
