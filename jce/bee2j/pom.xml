@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>jce</artifactId>
+        <groupId>net.easyappsec</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>bee2j</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <skipTests>true</skipTests>
+        <keys.basedir>${project.basedir}/signing</keys.basedir>
+        <res.dir>${project.basedir}/src/main/resources</res.dir>
+        <keys.alias>bee2j</keys.alias>
+        <keys.keypass>12345678</keys.keypass>
+        <keys.storepass>12345678</keys.storepass>
+        <public.path>${keys.basedir}/public/dev</public.path>
+        <keystore.path>${keys.basedir}/private/keystore.jks</keystore.path>
+    </properties>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Add manifest attributes to all files in a given location using the JDK 'jar umf' command line -->
+                            <mainClass>net.easyappsec.bee2j.util.ManifestModifier</mainClass>
+                            <arguments>
+                                <!-- The first argument indicates a single directory where the files are located -->
+                                <argument>${project.basedir}/target</argument>
+                                <!-- The other arguments indicates the manifest attributes to be added to each file -->
+                                <argument>Permissions: all-permissions</argument>
+                                <argument>Codebase: *</argument>
+                                <argument>Trusted-Library: true</argument>
+                                <argument>Application-Library-Allowable-Codebase: *</argument>
+                                <argument>Caller-Allowable-Codebase: *</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jarsigner-plugin</artifactId>
+                <version>1.2</version>
+                <executions>
+                    <execution>
+                        <id>sign</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <archiveDirectory>target</archiveDirectory>
+                    <excludes>
+                        <exclude>surefire/*.*</exclude>
+                    </excludes>
+                    <includes>
+                        <include>**/*.jar</include>
+                    </includes>
+                    <keystore>${keystore.path}</keystore>
+                    <storepass>${keys.storepass}</storepass>
+                    <alias>${keys.alias}</alias>
+                    <keypass>${keys.keypass}</keypass>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${res.dir}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                    <excludes>
+                        <exclude>**/*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sun.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>3.0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.2</version>
+        </dependency>
+    </dependencies>
+
+
+</project>
