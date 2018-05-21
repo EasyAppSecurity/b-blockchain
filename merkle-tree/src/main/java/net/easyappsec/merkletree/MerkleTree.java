@@ -217,7 +217,7 @@ public class MerkleTree implements Serializable {
         for (MerkleProofHash auditHash : auditTrail) {
             switch (auditHash.getDirection()) {
                 case Left:
-                    auditPairs.add(Pair.of(testHash, auditHash.getHash());
+                    auditPairs.add(Pair.of(testHash, auditHash.getHash()));
                     testHash = MerkleHash.create(ArrayUtils.addAll(testHash.getValue(), auditHash.getHash().getValue()));
                     break;
                 case Right:
