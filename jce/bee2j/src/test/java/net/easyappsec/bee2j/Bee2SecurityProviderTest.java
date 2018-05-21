@@ -1,10 +1,11 @@
 package net.easyappsec.bee2j;
 
-import by.softclub.jce.provider.BrngSecureRandom;
-import by.softclub.jce.provider.BeltKey;
-import by.softclub.jce.provider.SCSecurityProvider;
 import com.sun.jna.Pointer;
-import junit.framework.TestCase;
+import net.easyappsec.bee2j.provider.Bee2SecurityProvider;
+import net.easyappsec.bee2j.provider.BeltKey;
+import net.easyappsec.bee2j.provider.BrngSecureRandom;
+import org.junit.Test;
+
 import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.*;
@@ -12,13 +13,17 @@ import java.util.Arrays;
 
 import javax.crypto.*;
 
-public class Bee2jSecurityProviderTest extends TestCase{
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class Bee2SecurityProviderTest {
 
     //тестирование алгоритма хэширования из СТБ 34.101.31
+    @Test
     public void testBeltMessageDigest() throws NoSuchAlgorithmException, NoSuchProviderException {
         //установить провайдер
 
-        SCSecurityProvider scjce = new SCSecurityProvider();
+        Bee2SecurityProvider scjce = new Bee2SecurityProvider();
         Security.addProvider(scjce);
 
         //Тест A.24 из СТБ 34.101.31
@@ -26,7 +31,7 @@ public class Bee2jSecurityProviderTest extends TestCase{
         Bee2CryptoLibrary prov = Bee2CryptoLibrary.INSTANCE;
         byte[] hash;
         int n = 13;
-        MessageDigest beltH = MessageDigest.getInstance("BeltHash","Bee2");
+        MessageDigest beltH = MessageDigest.getInstance("BeltHash", "Bee2");
 
         Pointer p = prov.beltH();
 
@@ -37,9 +42,8 @@ public class Bee2jSecurityProviderTest extends TestCase{
         beltH.update(src);
         hash = beltH.digest();
         int[] intHash = new int[beltH.getDigestLength()];
-        for(int i = 0; i < hash.length; i++)
-        {
-            intHash[i] = hash[i]&0xff;
+        for (int i = 0; i < hash.length; i++) {
+            intHash[i] = hash[i] & 0xff;
         }
         int[] test1 = {0xab, 0xef, 0x97, 0x25,
                 0xd4, 0xc5, 0xa8, 0x35,
@@ -50,7 +54,7 @@ public class Bee2jSecurityProviderTest extends TestCase{
                 0x61, 0xa3, 0xec, 0x55,
                 0x0c, 0xba, 0x8c, 0x75
         };
-        assertTrue(Arrays.equals(test1,intHash));
+        assertTrue(Arrays.equals(test1, intHash));
 
         //Тест A.25 из СТБ 34.101.31
 
@@ -64,11 +68,10 @@ public class Bee2jSecurityProviderTest extends TestCase{
                 0x10, 0xee, 0x77, 0x86
         };
         hash = beltH.digest(srcPad);
-        for(int i = 0; i < hash.length; i++)
-        {
-            intHash[i] = hash[i]&0xff;
+        for (int i = 0; i < hash.length; i++) {
+            intHash[i] = hash[i] & 0xff;
         }
-        assertTrue(Arrays.equals(test2,intHash));
+        assertTrue(Arrays.equals(test2, intHash));
 
         //Тест A.26 из СТБ 34.101.31
 
@@ -82,20 +85,19 @@ public class Bee2jSecurityProviderTest extends TestCase{
                 0x17, 0x4a, 0x15, 0x4a
         };
         beltH.reset();
-        hash = beltH.digest(p.getByteArray(0,48));
-        for(int i = 0; i < hash.length; i++)
-        {
-            intHash[i] = hash[i]&0xff;
+        hash = beltH.digest(p.getByteArray(0, 48));
+        for (int i = 0; i < hash.length; i++) {
+            intHash[i] = hash[i] & 0xff;
         }
-        assertTrue(Arrays.equals(test3,intHash));
+        assertTrue(Arrays.equals(test3, intHash));
     }
 
     //тестирование алгоритма хэширования из СТБ 34.101.77
-    public void testBashMessageDigest() throws NoSuchAlgorithmException, NoSuchProviderException
-    {
+    @Test
+    public void testBashMessageDigest() throws NoSuchAlgorithmException, NoSuchProviderException {
         //установить провайдер
 
-        SCSecurityProvider scjce = new SCSecurityProvider();
+        Bee2SecurityProvider scjce = new Bee2SecurityProvider();
         Security.addProvider(scjce);
 
         //Тест A.2.1 из СТБ 34.101.77
@@ -103,7 +105,7 @@ public class Bee2jSecurityProviderTest extends TestCase{
         Bee2CryptoLibrary prov = Bee2CryptoLibrary.INSTANCE;
         byte[] hash;
         int n = 0;
-        MessageDigest bash = MessageDigest.getInstance("Bash256","Bee2");
+        MessageDigest bash = MessageDigest.getInstance("Bash256", "Bee2");
 
         Pointer p = prov.beltH();
         byte[] src = p.getByteArray(0, n);
@@ -111,8 +113,8 @@ public class Bee2jSecurityProviderTest extends TestCase{
         hash = bash.digest();
 
         String test = new String();
-        for(int i=0;i<hash.length;i++)
-            test = test.concat(Integer.toHexString(0x100| hash[i]&0xff).substring(1).toUpperCase());
+        for (int i = 0; i < hash.length; i++)
+            test = test.concat(Integer.toHexString(0x100 | hash[i] & 0xff).substring(1).toUpperCase());
         assertEquals(test, "114C3DFAE373D9BC" +
                 "BC3602D6386F2D6A" +
                 "2059BA1BF9048DBA" +
@@ -126,8 +128,8 @@ public class Bee2jSecurityProviderTest extends TestCase{
         hash = bash.digest();
 
         test = new String();
-        for(int i=0;i<hash.length;i++)
-            test = test.concat(Integer.toHexString(0x100| hash[i]&0xff).substring(1).toUpperCase());
+        for (int i = 0; i < hash.length; i++)
+            test = test.concat(Integer.toHexString(0x100 | hash[i] & 0xff).substring(1).toUpperCase());
         assertEquals(test, "3D7F4EFA00E9BA33" +
                 "FEED259986567DCF" +
                 "5C6D12D51057A968" +
@@ -135,15 +137,15 @@ public class Bee2jSecurityProviderTest extends TestCase{
 
         //Тест A.2.5 из СТБ 34.101.77
 
-        bash = MessageDigest.getInstance("Bash384","Bee2");
+        bash = MessageDigest.getInstance("Bash384", "Bee2");
         n = 95;
         src = p.getByteArray(0, n);
         bash.update(src);
         hash = bash.digest();
 
         test = new String();
-        for(int i=0;i<hash.length;i++)
-            test = test.concat(Integer.toHexString(0x100| hash[i]&0xff).substring(1).toUpperCase());
+        for (int i = 0; i < hash.length; i++)
+            test = test.concat(Integer.toHexString(0x100 | hash[i] & 0xff).substring(1).toUpperCase());
         assertEquals(test, "64334AF830D33F63" +
                 "E9ACDFA184E32522" +
                 "103FFF5C6860110A" +
@@ -159,8 +161,8 @@ public class Bee2jSecurityProviderTest extends TestCase{
         hash = bash.digest();
 
         test = new String();
-        for(int i=0;i<hash.length;i++)
-            test = test.concat(Integer.toHexString(0x100| hash[i]&0xff).substring(1).toUpperCase());
+        for (int i = 0; i < hash.length; i++)
+            test = test.concat(Integer.toHexString(0x100 | hash[i] & 0xff).substring(1).toUpperCase());
         assertEquals(test, "D06EFBC16FD6C088" +
                 "0CBFC6A4E3D65AB1" +
                 "01FA82826934190F" +
@@ -170,15 +172,15 @@ public class Bee2jSecurityProviderTest extends TestCase{
 
         //Тест A.2.8 из СТБ 34.101.77
 
-        bash = MessageDigest.getInstance("Bash512","Bee2");
+        bash = MessageDigest.getInstance("Bash512", "Bee2");
         n = 63;
         src = p.getByteArray(0, n);
         bash.update(src);
         hash = bash.digest();
 
         test = new String();
-        for(int i=0;i<hash.length;i++)
-            test = test.concat(Integer.toHexString(0x100| hash[i]&0xff).substring(1).toUpperCase());
+        for (int i = 0; i < hash.length; i++)
+            test = test.concat(Integer.toHexString(0x100 | hash[i] & 0xff).substring(1).toUpperCase());
         assertEquals(test, "2A66C87C189C12E2" +
                 "55239406123BDEDB" +
                 "F19955EAF0808B2A" +
@@ -196,8 +198,8 @@ public class Bee2jSecurityProviderTest extends TestCase{
         hash = bash.digest();
 
         test = new String();
-        for(int i=0;i<hash.length;i++)
-            test = test.concat(Integer.toHexString(0x100| hash[i]&0xff).substring(1).toUpperCase());
+        for (int i = 0; i < hash.length; i++)
+            test = test.concat(Integer.toHexString(0x100 | hash[i] & 0xff).substring(1).toUpperCase());
         assertEquals(test, "07ABBF8580E7E5A3" +
                 "21E9B940F667AE20" +
                 "9E2952CEF557978A" +
@@ -208,46 +210,50 @@ public class Bee2jSecurityProviderTest extends TestCase{
                 "AC2664C9C118A162");
 
     }
+
     //тестирование алгоритма генерации ключей из СТБ 34.101.45
+    @Test
     public void testBignKeyPairGenerator() throws NoSuchProviderException, NoSuchAlgorithmException {
 
         //Тест Г.1 из СТБ 34.101.45
 
-        SCSecurityProvider scjce = new SCSecurityProvider();
+        Bee2SecurityProvider scjce = new Bee2SecurityProvider();
         Security.addProvider(scjce);
 
         Bee2CryptoLibrary prov = Bee2CryptoLibrary.INSTANCE;
-        KeyPairGenerator bignKeyPairGenerator = KeyPairGenerator.getInstance("Bign","Bee2");
+        KeyPairGenerator bignKeyPairGenerator = KeyPairGenerator.getInstance("Bign", "Bee2");
         BrngSecureRandom brngSecureRandom = new BrngSecureRandom();
 
         //используется специальная тестовая функция с константным внутренним состоянием
-        brngSecureRandom.setRng( new Bee2CryptoLibrary.TestBrngForPK());
+        brngSecureRandom.setRng(new Bee2CryptoLibrary.TestBrngForPK());
         bignKeyPairGenerator.initialize(128, brngSecureRandom);
-        KeyPair keyPair =  bignKeyPairGenerator.generateKeyPair();
-        PrivateKey privateKey =  keyPair.getPrivate();
+        KeyPair keyPair = bignKeyPairGenerator.generateKeyPair();
+        PrivateKey privateKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
 
         //тест личного ключа
         byte[] byte_privateKey = privateKey.getEncoded();
         String hexPrivateKeyString = new String();
-        for(int i = 0;i<byte_privateKey.length;i++)
-            hexPrivateKeyString = hexPrivateKeyString.concat(Integer.toHexString(0x100| byte_privateKey[i]&0xff).substring(1).toUpperCase());
-        assertEquals(hexPrivateKeyString, "1F66B5B84B7339674533F0329C74F218"+
+        for (int i = 0; i < byte_privateKey.length; i++)
+            hexPrivateKeyString = hexPrivateKeyString.concat(Integer.toHexString(0x100 | byte_privateKey[i] & 0xff).substring(1).toUpperCase());
+        assertEquals(hexPrivateKeyString, "1F66B5B84B7339674533F0329C74F218" +
                 "34281FED0732429E0C79235FC273E269");
 
         //тест открытого ключа
         byte[] byte_publicKey = publicKey.getEncoded();
         String hexPublicKeyString = new String();
-        for(int i = 0;i<byte_publicKey.length;i++)
-            hexPublicKeyString = hexPublicKeyString.concat(Integer.toHexString(0x100| byte_publicKey[i]&0xff).substring(1).toUpperCase());
-        assertEquals(hexPublicKeyString, "BD1A5650179D79E03FCEE49D4C2BD5DD"+
-                "F54CE46D0CF11E4FF87BF7A890857FD0"+
-                "7AC6A60361E8C8173491686D461B2826"+
+        for (int i = 0; i < byte_publicKey.length; i++)
+            hexPublicKeyString = hexPublicKeyString.concat(Integer.toHexString(0x100 | byte_publicKey[i] & 0xff).substring(1).toUpperCase());
+        assertEquals(hexPublicKeyString, "BD1A5650179D79E03FCEE49D4C2BD5DD" +
+                "F54CE46D0CF11E4FF87BF7A890857FD0" +
+                "7AC6A60361E8C8173491686D461B2826" +
                 "190C2EDA5909054A9AB84D2AB9D99A90");
     }
+
     //тестирование ГПСЧ brng-ctr-hbelt  из СТБ 34.101.47
+    @Test
     public void testBrngSecureRandom() throws NoSuchProviderException, NoSuchAlgorithmException {
-        SCSecurityProvider prov = new SCSecurityProvider();
+        Bee2SecurityProvider prov = new Bee2SecurityProvider();
         Security.addProvider(prov);
 
         // Тест Б.2 из СТБ 34.101.47
@@ -257,11 +263,11 @@ public class Bee2jSecurityProviderTest extends TestCase{
         brngSecureRandom.setRng(new Bee2CryptoLibrary.TestBrngFunc());
         Pointer p = sccrypto.beltH();
         byte[] byte_test = p.getByteArray(0, 96);
-        brngSecureRandom.engineSetSeed(p.getByteArray(192,32));
+        brngSecureRandom.engineSetSeed(p.getByteArray(192, 32));
         brngSecureRandom.engineNextBytes(byte_test);
         String test = new String();
-        for(int i=0;i<96;i++)
-            test = test.concat(Integer.toHexString(0x100| byte_test[i]&0xff).substring(1).toUpperCase());
+        for (int i = 0; i < 96; i++)
+            test = test.concat(Integer.toHexString(0x100 | byte_test[i] & 0xff).substring(1).toUpperCase());
         assertEquals(test, "1F66B5B84B7339674533F0329C74F21834281FED0732429E0C79235FC273E269" +
                 "4C0E74B2CD5811AD21F23DE7E0FA742C3ED6EC483C461CE15C33A77AA308B7D2" +
                 "0F51D91347617C20BD4AB07AEF4F26A1AD1362A8F9A3D42FBE1B8E6F1C88AAD5"
@@ -269,60 +275,64 @@ public class Bee2jSecurityProviderTest extends TestCase{
 
         //если скопировать тест, то получатся строки внешне одинаковые, однако тест не работает
     }
+
     //тестирование алгоритма шифрования из СТБ 34.101.31 в режиме ECB
+    @Test
     public void testBeltCipher() throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         //Тест A.6 из СТБ 34.101.31
         Bee2CryptoLibrary scjce = Bee2CryptoLibrary.INSTANCE;
         byte[] encr_data = new byte[48];
-        scjce.beltECBEncr(encr_data,scjce.beltH().getByteArray(0,48),48,scjce.beltH().getByteArray(128,32),32);
+        scjce.beltECBEncr(encr_data, scjce.beltH().getByteArray(0, 48), 48, scjce.beltH().getByteArray(128, 32), 32);
         String test = new String();
-        for(int i=0;i<48;i++)
-            test = test.concat(Integer.toHexString(0x100| encr_data[i]&0xff).substring(1).toUpperCase());
-        assertEquals(test, "69CCA1C93557C9E3D66BC3E0FA88FA6E"+
-                "5F23102EF109710775017F73806DA9DC"+
+        for (int i = 0; i < 48; i++)
+            test = test.concat(Integer.toHexString(0x100 | encr_data[i] & 0xff).substring(1).toUpperCase());
+        assertEquals(test, "69CCA1C93557C9E3D66BC3E0FA88FA6E" +
+                "5F23102EF109710775017F73806DA9DC" +
                 "46FB2ED2CE771F26DCB5E5D1569F9AB0");
 
 
         //на интерфейсах Java
 
-        BeltKey beltKey = new BeltKey(scjce.beltH().getByteArray(128,32));
-        Cipher beltCipher = Cipher.getInstance("Belt","Bee2");
+        BeltKey beltKey = new BeltKey(scjce.beltH().getByteArray(128, 32));
+        Cipher beltCipher = Cipher.getInstance("Belt", "Bee2");
         beltCipher.init(Cipher.ENCRYPT_MODE, beltKey);
-        encr_data = beltCipher.doFinal(scjce.beltH().getByteArray(0,48),0,48);
+        encr_data = beltCipher.doFinal(scjce.beltH().getByteArray(0, 48), 0, 48);
         test = new String();
-        for(int i=0;i<48;i++)
-            test = test.concat(Integer.toHexString(0x100| encr_data[i]&0xff).substring(1).toUpperCase());
-        assertEquals(test, "69CCA1C93557C9E3D66BC3E0FA88FA6E"+
-                "5F23102EF109710775017F73806DA9DC"+
+        for (int i = 0; i < 48; i++)
+            test = test.concat(Integer.toHexString(0x100 | encr_data[i] & 0xff).substring(1).toUpperCase());
+        assertEquals(test, "69CCA1C93557C9E3D66BC3E0FA88FA6E" +
+                "5F23102EF109710775017F73806DA9DC" +
                 "46FB2ED2CE771F26DCB5E5D1569F9AB0");
 
     }
 
     //тестирование ЭЦП  из СТБ 34.101.45
+    @Test
     public void testBignSignature() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        SCSecurityProvider scjce = new SCSecurityProvider();
+        Bee2SecurityProvider scjce = new Bee2SecurityProvider();
         Security.addProvider(scjce);
 
         //выработка и проверка ЭЦП через интерфейсы Java
         Bee2CryptoLibrary lib = Bee2CryptoLibrary.INSTANCE;
-        Signature bignSignature = Signature.getInstance("Bign","Bee2");
-        KeyPairGenerator bignKeyPairGenerator = KeyPairGenerator.getInstance("Bign","Bee2");
-        KeyPair bignKeyPair =  bignKeyPairGenerator.generateKeyPair();
+        Signature bignSignature = Signature.getInstance("Bign", "Bee2");
+        KeyPairGenerator bignKeyPairGenerator = KeyPairGenerator.getInstance("Bign", "Bee2");
+        KeyPair bignKeyPair = bignKeyPairGenerator.generateKeyPair();
         PrivateKey privateKey = bignKeyPair.getPrivate();
         PublicKey publicKey = bignKeyPair.getPublic();
         bignSignature.initSign(privateKey);
-        byte[] data = lib.beltH().getByteArray(0,13);
-        bignSignature.update(data,0,13);
+        byte[] data = lib.beltH().getByteArray(0, 13);
+        bignSignature.update(data, 0, 13);
         byte[] sig = bignSignature.sign();
         bignSignature.initVerify(publicKey);
-        bignSignature.update(data,0,13);
+        bignSignature.update(data, 0, 13);
         assertTrue(bignSignature.verify(sig));
     }
 
     //тестирование имитовставки из СТБ 34.101.31
+    @Test
     public void testBeltMAC() throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 
-        SCSecurityProvider scjce = new SCSecurityProvider();
+        Bee2SecurityProvider scjce = new Bee2SecurityProvider();
         Security.addProvider(scjce);
 
         //Тест A.18 из СТБ 34.101.31
@@ -330,23 +340,23 @@ public class Bee2jSecurityProviderTest extends TestCase{
         Bee2CryptoLibrary lib = Bee2CryptoLibrary.INSTANCE;
         byte[] res = new byte[8];
 
-        assertEquals(lib.beltMAC(res, lib.beltH().getByteArray(0,48), 48, lib.beltH().getByteArray(128,32), 32),0);
+        assertEquals(lib.beltMAC(res, lib.beltH().getByteArray(0, 48), 48, lib.beltH().getByteArray(128, 32), 32), 0);
         String stringMAC = new String();
-        for(int i=0;i<8;i++)
-            stringMAC = stringMAC.concat(Integer.toHexString(0x100| res[i]&0xff).substring(1).toUpperCase());
-        assertEquals(stringMAC,"2DAB59771B4B16D0");
+        for (int i = 0; i < 8; i++)
+            stringMAC = stringMAC.concat(Integer.toHexString(0x100 | res[i] & 0xff).substring(1).toUpperCase());
+        assertEquals(stringMAC, "2DAB59771B4B16D0");
 
         //Тест на интерфейсах Java
 
         Mac beltMAC = Mac.getInstance("BeltMAC", "Bee2");
-        DSAParameterSpec stubSpec = new DSAParameterSpec(new BigInteger("1"),new BigInteger("1"),new BigInteger("1"));
-        beltMAC.init(new BeltKey(lib.beltH().getByteArray(128,32)), stubSpec);
-        beltMAC.update(lib.beltH().getByteArray(0,48),0,48);
+        DSAParameterSpec stubSpec = new DSAParameterSpec(new BigInteger("1"), new BigInteger("1"), new BigInteger("1"));
+        beltMAC.init(new BeltKey(lib.beltH().getByteArray(128, 32)), stubSpec);
+        beltMAC.update(lib.beltH().getByteArray(0, 48), 0, 48);
         res = beltMAC.doFinal();
         stringMAC = new String();
-        for(int i=0;i<8;i++)
-            stringMAC = stringMAC.concat(Integer.toHexString(0x100| res[i]&0xff).substring(1).toUpperCase());
-        assertEquals(stringMAC,"2DAB59771B4B16D0");
+        for (int i = 0; i < 8; i++)
+            stringMAC = stringMAC.concat(Integer.toHexString(0x100 | res[i] & 0xff).substring(1).toUpperCase());
+        assertEquals(stringMAC, "2DAB59771B4B16D0");
 
     }
 }
