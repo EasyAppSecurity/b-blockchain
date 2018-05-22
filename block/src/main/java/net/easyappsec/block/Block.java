@@ -7,7 +7,7 @@ import java.util.Date;
 
 public interface Block extends Serializable {
 
-    public long getBlockNumber();
+    public String getGuid();
 
     public Date getCreatedDate();
 

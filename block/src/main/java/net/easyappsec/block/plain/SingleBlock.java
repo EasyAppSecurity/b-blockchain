@@ -13,7 +13,7 @@ import java.util.Date;
 
 public class SingleBlock implements Block {
 
-    private long blockNumber;
+    private String guid;
     private Date createdDate;
     @JsonIgnore
     private String blockHash;
@@ -22,16 +22,16 @@ public class SingleBlock implements Block {
     private Block nextBlock;
     private byte[] payload;
 
-    public SingleBlock(long blockNumber, byte[] payload, Block parent) {
-        this.blockNumber = blockNumber;
+    public SingleBlock(String guid, byte[] payload, Block parent) {
+        this.guid = guid;
         this.payload = payload;
         this.createdDate = new Date();
         setBlockHash(parent);
     }
 
     @Override
-    public long getBlockNumber() {
-        return blockNumber;
+    public String getGuid() {
+        return guid;
     }
 
     @Override

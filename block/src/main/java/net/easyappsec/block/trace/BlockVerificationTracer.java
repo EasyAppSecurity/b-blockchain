@@ -18,9 +18,9 @@ public class BlockVerificationTracer implements BlockTracer<Boolean, Void, Void>
     public void trace(Block block, Boolean valid) {
         if (verbose) {
             if (!valid) {
-                log.severe(String.format("Block number [%d] : FAILED VERIFICATION", block.getBlockNumber()));
+                log.severe(String.format("Block number [%s] : FAILED VERIFICATION", block.getGuid()));
             } else {
-                log.warning(String.format("Block number [%d] : pass verification", block.getBlockNumber()));
+                log.warning(String.format("Block number [%s] : pass verification", block.getGuid()));
             }
         }
     }
